@@ -4,10 +4,12 @@ import model.CalculatorModel;
 import view.CalculatorView;
 import view.FunctionView;
 import view.LinearAlgebraView;
+import view.UnitConverterView;
 import controller.FunctionController;
 import controller.LinearAlgebraController;
 import model.FunctionModel;
 import model.LinearAlgebraModel;
+import model.UnitConverterModel;
 import view.VectorView;
 
 import java.util.*;
@@ -22,6 +24,7 @@ public class CalculatorController {
     private StringBuilder expression;      // 完整表达式
     private boolean startNewInput;         // 是否开始新输入
     private boolean hasCalculated;         // 是否已经计算过结果
+
 
     public CalculatorController(CalculatorModel model, CalculatorView view) {
         this.model = model;
@@ -91,6 +94,9 @@ public class CalculatorController {
             else if (command.equals("向量")) {
                 openVectorView();
             }
+            else if (command.equals("单位转换")) {
+                openRadianView();
+            }
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(view, "计算错误: " + ex.getMessage(), "错误", JOptionPane.ERROR_MESSAGE);
             clearAll();
@@ -103,12 +109,12 @@ public class CalculatorController {
             expression.setLength(0);
             startNewInput = false;
         }
-        
+
         if (hasCalculated) {
             clearAll();
             hasCalculated = false;
         }
-        
+
         expression.append(number);
         updateDisplay();
     }
@@ -118,7 +124,7 @@ public class CalculatorController {
         if (hasCalculated) {
             hasCalculated = false;
         }
-        
+
         // 处理小数点
         if (operator.equals(".")) {
             // 检查是否已经有小数点
@@ -131,7 +137,7 @@ public class CalculatorController {
                 int lastIndex = expression.length() - 1;
                 boolean hasDecimal = false;
                 int i = lastIndex;
-                
+
                 // 从后向前查找，直到遇到非数字字符
                 while (i >= 0) {
                     char c = expression.charAt(i);
@@ -143,7 +149,7 @@ public class CalculatorController {
                     }
                     i--;
                 }
-                
+
                 if (!hasDecimal) {
                     // 如果最后一个字符不是数字，先添加0
                     if (lastIndex < 0 || !Character.isDigit(expression.charAt(lastIndex))) {
@@ -155,14 +161,14 @@ public class CalculatorController {
             updateDisplay();
             return;
         }
-        
+
         // 处理正负号
         if (operator.equals("±")) {
             if (expression.length() > 0) {
                 // 找到最后一个数字的开始位置
                 int lastIndex = expression.length() - 1;
                 int startIndex = lastIndex;
-                
+
                 // 从后向前查找，直到遇到非数字字符
                 while (startIndex >= 0) {
                     char c = expression.charAt(startIndex);
@@ -174,11 +180,11 @@ public class CalculatorController {
                     }
                     startIndex--;
                 }
-                
+
                 if (startIndex <= 0) {
                     startIndex = 0;
                 }
-                
+
                 // 检查是否已经有负号
                 if (startIndex > 0 && expression.charAt(startIndex - 1) == '-' &&
                     (startIndex == 1 || !Character.isDigit(expression.charAt(startIndex - 2)))) {
@@ -192,7 +198,7 @@ public class CalculatorController {
             }
             return;
         }
-        
+
         // 确保表达式不为空或者是括号
         if (operator.equals("(")) {
             expression.append(operator);
@@ -200,12 +206,12 @@ public class CalculatorController {
             updateDisplay();
             return;
         }
-        
+
         // 处理右括号，确保有对应的左括号
         if (operator.equals(")")) {
             int leftCount = 0;
             int rightCount = 0;
-            
+
             for (int i = 0; i < expression.length(); i++) {
                 if (expression.charAt(i) == '(') {
                     leftCount++;
@@ -221,16 +227,16 @@ public class CalculatorController {
             }
             return;
         }
-        
+
         // 处理其他操作符
         if (expression.length() > 0) {
             char lastChar = expression.charAt(expression.length() - 1);
-            
+
             // 如果最后一个字符是操作符，替换它
             if (isOperatorChar(lastChar) && lastChar != ')') {
                 expression.setLength(expression.length() - 1);
             }
-            
+
             // 确保不在表达式开头添加操作符（除了负号）
             if (expression.length() > 0 && (lastChar != '(' || operator.equals("-"))) {
                 expression.append(operator);
@@ -250,7 +256,7 @@ public class CalculatorController {
             clearAll();
             hasCalculated = false;
         }
-        
+
         // 对于简单输入，直接计算
         if (expression.length() > 0 && !containsOperator(expression.toString())) {
             try {
@@ -264,7 +270,7 @@ public class CalculatorController {
                 // 不是简单数字，继续处理
             }
         }
-        
+
         // 对于复杂表达式，添加函数名和左括号
         expression.append(function).append("(");
         startNewInput = false;
@@ -277,7 +283,7 @@ public class CalculatorController {
             expression.setLength(0);
             startNewInput = false;
         }
-        
+
         if (hasCalculated) {
             clearAll();
             hasCalculated = false;
@@ -297,21 +303,21 @@ public class CalculatorController {
         if (expression.length() > 0) {
             try {
                 String expressionStr = expression.toString();
-                
+
                 // 替换常量
                 expressionStr = expressionStr.replace("π", String.valueOf(Math.PI));
                 expressionStr = expressionStr.replace("e", String.valueOf(Math.E));
-                
+
                 // 计算表达式
                 double result = evaluateExpression(expressionStr);
-                
+
                 // 更新显示
                 String calculation = expression.toString();
                 view.setDisplayText(calculation, "", formatResult(result));
-                
+
                 // 添加到历史记录
                 model.getHistory().add(calculation + " = " + formatResult(result));
-                
+
                 // 重置状态
                 expression.setLength(0);
                 expression.append(formatResult(result));
@@ -352,7 +358,7 @@ public class CalculatorController {
     private boolean isOperator(String command) {
         return command.matches("[+\\-×÷^√%\\.±()]");
     }
-    
+
     // 检查字符是否为操作符
     private boolean isOperatorChar(char c) {
         return "+-×÷^√%()".indexOf(c) != -1;
@@ -367,7 +373,7 @@ public class CalculatorController {
     private boolean isConstant(String command) {
         return command.equals("π") || command.equals("e");
     }
-    
+
     // 检查表达式是否包含操作符
     private boolean containsOperator(String expr) {
         for (char c : expr.toCharArray()) {
@@ -406,14 +412,14 @@ public class CalculatorController {
                 throw new UnsupportedOperationException("未知函数: " + function);
         }
     }
-    
+
     // 评估表达式
     private double evaluateExpression(String expression) {
         // 创建表达式计算器
         ExpressionEvaluator evaluator = new ExpressionEvaluator(view.isInRadianMode(), model);
         return evaluator.evaluate(expression);
     }
-    
+
     // 格式化结果，避免显示过多小数位
     private String formatResult(double result) {
         if (result == (long) result) {
@@ -422,7 +428,7 @@ public class CalculatorController {
             return String.format("%.8g", result);
         }
     }
-    
+
     // 表达式计算器内部类
     private class ExpressionEvaluator {
         private boolean radianMode;
@@ -430,12 +436,12 @@ public class CalculatorController {
         private int pos = -1;
         private int ch;
         private String expr;
-        
+
         public ExpressionEvaluator(boolean radianMode, CalculatorModel model) {
             this.radianMode = radianMode;
             this.model = model;
         }
-        
+
         public double evaluate(String expression) {
             this.expr = expression;
             pos = -1;
@@ -446,11 +452,11 @@ public class CalculatorController {
             }
             return result;
         }
-        
+
         private void nextChar() {
             ch = (++pos < expr.length()) ? expr.charAt(pos) : -1;
         }
-        
+
         private boolean eat(int charToEat) {
             while (ch == ' ') nextChar();
             if (ch == charToEat) {
@@ -459,7 +465,7 @@ public class CalculatorController {
             }
             return false;
         }
-        
+
         // 解析表达式
         private double parseExpression() {
             double x = parseTerm();
@@ -469,7 +475,7 @@ public class CalculatorController {
                 else return x;
             }
         }
-        
+
         // 解析项
         private double parseTerm() {
             double x = parseFactor();
@@ -480,15 +486,15 @@ public class CalculatorController {
                 else return x;
             }
         }
-        
+
         // 解析因子
         private double parseFactor() {
             if (eat('+')) return parseFactor(); // 一元加
             if (eat('-')) return -parseFactor(); // 一元减
-            
+
             double x;
             int startPos = this.pos;
-            
+
             // 处理括号
             if (eat('(')) {
                 x = parseExpression();
@@ -503,7 +509,7 @@ public class CalculatorController {
             else if ((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z')) {
                 while ((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z')) nextChar();
                 String func = expr.substring(startPos, this.pos);
-                
+
                 if (func.equals("sin")) {
                     eat('(');
                     x = radianMode ? model.sin(parseExpression()) : model.sin(Math.toRadians(parseExpression()));
@@ -545,16 +551,16 @@ public class CalculatorController {
             } else {
                 throw new RuntimeException("意外的字符: " + (char)ch);
             }
-            
+
             // 处理指数运算
             if (eat('^')) x = model.power(x, parseFactor());
-            
+
             // 处理阶乘
             if (eat('!')) x = model.factorial(x);
-            
+
             // 处理平方根
             if (eat('√')) x = model.squareRoot(parseFactor());
-            
+
             return x;
         }
     }
@@ -565,7 +571,7 @@ public class CalculatorController {
         FunctionController functionController = new FunctionController(functionView, functionModel);
         functionView.setVisible(true);
     }
-    
+
     // 打开线性代数计算器视图
     private void openLinearAlgebraView() {
         LinearAlgebraModel linearAlgebraModel = new LinearAlgebraModel();
@@ -579,5 +585,13 @@ public class CalculatorController {
         VectorView vectorView = new VectorView();
         new VectorController(vectorView);
         vectorView.setVisible(true);
+    }
+
+    // 打开单位转换计算器视图
+    private void openRadianView() {
+        UnitConverterModel model = new UnitConverterModel();
+        UnitConverterView converterView = new UnitConverterView(view); // 使用CalculatorView作为父窗口
+        new UnitConverterController(converterView, model); // 绑定控制器
+        converterView.setVisible(true);
     }
 }

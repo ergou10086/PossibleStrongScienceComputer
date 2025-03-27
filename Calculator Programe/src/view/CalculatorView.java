@@ -20,6 +20,7 @@ public class CalculatorView extends JFrame {
     private JButton functionButton;  // 函数计算按钮
     private JButton linearAlgebraButton; // 线性代数按钮
     private JButton vectorButton;
+    private JButton unitConvertButton;    // 单位转换按钮
     private boolean inRadianMode = true; // 默认使用弧度模式
 
     public CalculatorView() { initCalcView(); }
@@ -108,6 +109,8 @@ public class CalculatorView extends JFrame {
         functionButton = createStyledButton("函数", new Color(200, 200, 255));
         linearAlgebraButton = createStyledButton("线代", new Color(230, 200, 255));
         vectorButton = createStyledButton("向量", new Color(220, 255, 220));
+        unitConvertButton = createStyledButton("单位转换", new Color(200, 255, 255));
+
 
         // 主面板布局
         JPanel mainPanel = new JPanel(new BorderLayout(5, 5));
@@ -173,10 +176,11 @@ public class CalculatorView extends JFrame {
         rightPanel.add(operatorButtons[7]);  // )
         rightPanel.add(functionButton);      // 函数
         
-        // 添加额外的面板用于放置线性代数和向量按钮
+        // 添加额外的面板用于放置线性代数和向量按钮等
         JPanel extraPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         extraPanel.add(vectorButton);
         extraPanel.add(linearAlgebraButton);
+        extraPanel.add(unitConvertButton);
         
         // 将左右面板添加到按钮面板
         buttonPanel.add(leftPanel);
@@ -261,6 +265,7 @@ public class CalculatorView extends JFrame {
         functionButton.addActionListener(listener);
         linearAlgebraButton.addActionListener(listener);
         vectorButton.addActionListener(listener);
+        unitConvertButton.addActionListener(listener);
     }
 
     // 显示历史计算信息
